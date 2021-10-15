@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import AuthService from './auth.service';
 
 @Controller()
-export class AuthController {
+export default class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get()
