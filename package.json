@@ -1,10 +1,10 @@
 {
   "name": "core",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Backend for chat without trace",
+  "author": "Yauheni Yafimenka aka yafimchik (yafimenka.jk@gmail.com)",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
