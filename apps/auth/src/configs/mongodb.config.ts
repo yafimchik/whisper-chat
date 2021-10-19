@@ -27,7 +27,6 @@ function getAuthMongodbConnectionString(configService: ConfigService): string {
   query = query ? '?' + query : '';
   const protocol = port ? 'mongodb' : 'mongodb+srv';
   const url = `${protocol}://${user}:${password}@${host}${port}/${db}${query}`;
-  console.log(url);
   return encodeUrl(url);
 }
 
