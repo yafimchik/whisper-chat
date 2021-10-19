@@ -4,23 +4,29 @@ import AuthController from './auth.controller';
 import AuthService from './auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypegooseModule } from 'nestjs-typegoose';
-import CryptService from './crypt/crypt.service';
 import CryptModule from './crypt/crypt.module';
 import getAuthMongodbConfig from './configs/mongodb.config';
 import getAuthCryptConfig from './configs/crypt.config';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import getJwtConfig from './configs/jwt.config';
 import { PassportModule } from '@nestjs/passport';
+import { UserService } from './user/user.service';
+import UserModel from './user/user.model';
 
 @Module({
   imports: [
-    UserModule,
     ConfigModule.forRoot(),
     TypegooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: getAuthMongodbConfig,
     }),
+    TypegooseModule.forFeature([
+      {
+        typegooseClass: UserModel,
+        schemaOptions: { collection: 'User' },
+      },
+    ]),
     CryptModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,13 +37,13 @@ import { PassportModule } from '@nestjs/passport';
       inject: [ConfigService],
       useFactory: getJwtConfig,
     }),
+    UserModule,
     PassportModule,
   ],
   controllers: [AuthController],
   providers: [
     AuthService,
-    CryptService,
-    JwtService,
+    UserService,
   ],
   exports: [AuthService],
 })

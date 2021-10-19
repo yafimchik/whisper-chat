@@ -4,7 +4,7 @@ import { ICryptOptions } from '../crypt/crypt.interface';
 
 export default function getAuthCryptConfig(configService: ConfigService): ICryptOptions {
   return {
-    saltOrRounds: configService.get(CRYPT_SALT_ROUNDS),
+    saltOrRounds: parseInt(configService.get(CRYPT_SALT_ROUNDS)),
   };
 }
 

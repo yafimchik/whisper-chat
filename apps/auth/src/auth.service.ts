@@ -32,10 +32,10 @@ export default class AuthService {
     const existedUser = await this.userService.findByEmail(createUserDto.email);
     if (existedUser) return null;
     const newUser = await this.userService.create(createUserDto);
-    const userWithActivationCode = await this.createActivationCode(newUser);
+    const activationCode = await this.createActivationCode(newUser);
 
-    if (userWithActivationCode) {
-      await this.sendActivationEmail(userWithActivationCode);
+    if (activationCode) {
+      await this.sendActivationEmail(newUser, activationCode);
     }
 
     return newUser;
@@ -75,16 +75,16 @@ export default class AuthService {
     return !!result;
   }
 
-  private async createActivationCode(user: IUser): Promise<IUser> {
+  private async createActivationCode(user: IUser): Promise<string> {
     if (user.isActivated) return null;
     const activationCode = randomUUID();
     const updated = await this.userService
       .update(user._id, { activationCode });
 
-    return updated ?? null;
+    return updated ? activationCode : null;
   }
 
-  async sendActivationEmail(userOrEmail: IUser | string): Promise<boolean> {
+  async sendActivationEmail(userOrEmail: IUser | string, activationCode?: string): Promise<boolean | string> {
     let user: IUser;
     if (typeof userOrEmail === 'string') {
       user = await this.userService.findByEmail(userOrEmail);
@@ -93,9 +93,12 @@ export default class AuthService {
     }
 
     if (user.isActivated) return false;
+
+    const newActivationCode = (activationCode) ?? await this.createActivationCode(user);
+
     // TODO sending of email with activation link
-    // const link = `/activate/${user._id.toString()}/code/${activationCode}`;
-    return true;
+    return `/activate/${user._id}/code/${newActivationCode}`;
+    // return true;
   }
 
   private getTokenExpireDate(creationDate: Date = new Date(), lifeTimeString: string): Date {

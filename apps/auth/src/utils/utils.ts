@@ -33,3 +33,15 @@ export function getSecondsFromJwtLifeTimeString(lifeTimeString: string = ''): nu
     });
   return seconds;
 }
+
+const SPECIFIC_SYMBOLS = {
+  '#': '%23',
+};
+
+export function encodeUrl(url: string): string {
+  const newUrl = encodeURI(url);
+  return newUrl
+    .split('')
+    .map((letter) => SPECIFIC_SYMBOLS[letter] ?? letter)
+    .join('');
+}

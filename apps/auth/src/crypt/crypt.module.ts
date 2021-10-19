@@ -4,14 +4,7 @@ import { ICryptModuleOptions } from './crypt.interface';
 import { CRYPT_MODULE_OPTIONS } from './crypt.constants';
 
 @Global()
-@Module({
-  providers: [
-    CryptService,
-  ],
-  exports: [
-    CryptService,
-  ]
-})
+@Module({})
 export default class CryptModule {
   static forRootAsync(options: ICryptModuleOptions): DynamicModule {
     const asyncOptionsProvider = this.createAsyncOptionsProvider(options);

@@ -1,10 +1,11 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Body,
   Controller,
   Get,
   Param,
-  Post, UnauthorizedException,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import AuthService from './auth.service';
@@ -47,9 +48,7 @@ export default class AuthController {
   @UseGuards(LocalGuard)
   @Post('activation/send-email')
   async sendEmail(@AuthInfo() authInfo: IAuthInfo) {
-    if (authInfo.isActivated) return {
-      // TODO handling rejecting
-    }
+    if (authInfo.isActivated) return false; // TODO handling rejecting
     return this.authService.sendActivationEmail(authInfo.email);
   }
 
@@ -60,8 +59,7 @@ export default class AuthController {
     @AuthInfo() authInfo: IAuthInfo,
   ): Promise<IJwtAccess> {
     if (!authInfo.isActivated) {
-      throw new UnauthorizedException(USER_NOT_ACTIVATED_ERROR);
-      // TODO redirect to page with activation
+      throw new ForbiddenException(USER_NOT_ACTIVATED_ERROR);
     }
     return this.authService.generateTokens(authInfo);
   }

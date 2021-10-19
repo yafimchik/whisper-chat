@@ -5,12 +5,13 @@ import UpdateUserDto from './dto/update-user.dto';
 import CryptService from '../crypt/crypt.service';
 import { IUser, IUserUpdate } from './user.interface';
 import UserEntity from './entities/user.entity';
+import { InjectModel } from 'nestjs-typegoose';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(UserModel) private readonly userModel: DbModelUser,
-    @Inject(CryptService) private readonly cryptService: CryptService,
+    @InjectModel(UserModel) private readonly userModel: DbModelUser,
+    private readonly cryptService: CryptService,
   ) {}
 
   async create({ email, password }: CreateUserDto): Promise<IUser> {
