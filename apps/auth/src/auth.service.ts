@@ -1,10 +1,105 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { UserService } from './user/user.service';
+import RegisterUserDto from './dto/user-register.dto';
+import CryptService from './crypt/crypt.service';
+import { JwtService } from '@nestjs/jwt';
+import { IAuthInfo, IJwtAccess, IJwtPayload } from './auth.interface';
+import { randomUUID } from 'crypto';
+import { add as addToDate } from 'date-fns';
+import { ConfigService } from '@nestjs/config';
+import { JWT_ACCESS_LIFE_TIME, JWT_REFRESH_LIFE_TIME } from './configs/auth.constants';
+import { getSecondsFromJwtLifeTimeString } from './utils/utils';
+import { IUser } from './user/user.interface';
+
 
 @Injectable()
 export default class AuthService {
-  private hello = 'Hello World!';
+  constructor(
+    @Inject(UserService) private readonly userService: UserService,
+    @Inject(CryptService) private readonly cryptService: CryptService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
-  getHello(): string {
-    return this.hello;
+  async validate({ email, password }: RegisterUserDto): Promise<IUser> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) return null;
+    if (user.passwordHash !== await this.cryptService.getHash(password)) return null;
+    return user;
+  }
+
+  async register(createUserDto: RegisterUserDto): Promise<IUser> {
+    const existedUser = await this.userService.findByEmail(createUserDto.email);
+    if (existedUser) return null;
+    const newUser = await this.userService.create(createUserDto);
+    const userWithActivationCode = await this.createActivationCode(newUser);
+
+    if (userWithActivationCode) {
+      await this.sendActivationEmail(userWithActivationCode);
+    }
+
+    return newUser;
+  }
+
+  async generateTokens(payload: IAuthInfo): Promise<IJwtAccess> {
+    const currentDate = new Date();
+
+    const refreshBefore = this
+      .getTokenExpireDate(currentDate, this.configService.get(JWT_REFRESH_LIFE_TIME))
+      .toJSON();
+    const expiresAfter = this
+      .getTokenExpireDate(currentDate, this.configService.get(JWT_ACCESS_LIFE_TIME))
+      .toJSON();
+
+    const refreshPayload: IJwtPayload = { ...payload, isRefreshToken: true };
+
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+      refresh_token: await this.jwtService.signAsync(refreshPayload),
+      expires_after: expiresAfter,
+      refresh_before: refreshBefore,
+    };
+  }
+
+  async activate(userId, activationCode): Promise<boolean> {
+    const user = await this.userService.findOne(userId);
+    if (!user) return false;
+    if (user.isActivated) return true;
+
+    if (await this.cryptService.getHash(activationCode) !== user.activationCodeHash) {
+      return false;
+    }
+
+    const result = await this.userService
+      .update(user._id, { isActivated: true });
+    return !!result;
+  }
+
+  private async createActivationCode(user: IUser): Promise<IUser> {
+    if (user.isActivated) return null;
+    const activationCode = randomUUID();
+    const updated = await this.userService
+      .update(user._id, { activationCode });
+
+    return updated ?? null;
+  }
+
+  async sendActivationEmail(userOrEmail: IUser | string): Promise<boolean> {
+    let user: IUser;
+    if (typeof userOrEmail === 'string') {
+      user = await this.userService.findByEmail(userOrEmail);
+    } else {
+      user = userOrEmail;
+    }
+
+    if (user.isActivated) return false;
+    // TODO sending of email with activation link
+    // const link = `/activate/${user._id.toString()}/code/${activationCode}`;
+    return true;
+  }
+
+  private getTokenExpireDate(creationDate: Date = new Date(), lifeTimeString: string): Date {
+    const seconds = getSecondsFromJwtLifeTimeString(lifeTimeString);
+    return addToDate(creationDate, { seconds });
   }
 }
