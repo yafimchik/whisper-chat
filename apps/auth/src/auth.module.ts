@@ -8,6 +8,9 @@ import CryptService from './crypt/crypt.service';
 import CryptModule from './crypt/crypt.module';
 import getAuthMongodbConfig from './configs/mongodb.config';
 import getAuthCryptConfig from './configs/crypt.config';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import getJwtConfig from './configs/jwt.config';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -23,8 +26,19 @@ import getAuthCryptConfig from './configs/crypt.config';
       inject: [ConfigService],
       useFactory: getAuthCryptConfig,
     }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: getJwtConfig,
+    }),
+    PassportModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, CryptService],
+  providers: [
+    AuthService,
+    CryptService,
+    JwtService,
+  ],
+  exports: [AuthService],
 })
 export default class AuthModule {}
