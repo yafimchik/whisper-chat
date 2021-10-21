@@ -4,12 +4,12 @@ import RegisterUserDto from './dto/user-register.dto';
 import CryptService from './crypt/crypt.service';
 import { JwtService } from '@nestjs/jwt';
 import { IAuthInfo, IJwtAccess, IJwtPayload } from './auth.interface';
-import { randomUUID } from 'crypto';
 import { add as addToDate } from 'date-fns';
 import { ConfigService } from '@nestjs/config';
 import { JWT_ACCESS_LIFE_TIME, JWT_REFRESH_LIFE_TIME } from './configs/auth.constants';
 import { getSecondsFromJwtLifeTimeString } from './utils/utils';
 import { IUser } from './user/user.interface';
+import { v4 as uuid } from 'uuid';
 
 
 @Injectable()
@@ -24,8 +24,7 @@ export default class AuthService {
   async validate({ email, password }: RegisterUserDto): Promise<IUser> {
     const user = await this.userService.findByEmail(email);
     if (!user) return null;
-    if (user.passwordHash !== await this.cryptService.getHash(password)) return null;
-    return user;
+    return (await this.cryptService.compare(password, user.passwordHash)) ? user : null;
   }
 
   async register(createUserDto: RegisterUserDto): Promise<IUser> {
@@ -55,7 +54,10 @@ export default class AuthService {
 
     return {
       access_token: await this.jwtService.signAsync(payload),
-      refresh_token: await this.jwtService.signAsync(refreshPayload),
+      refresh_token: await this.jwtService.signAsync(
+        refreshPayload,
+        { expiresIn: this.configService.get(JWT_REFRESH_LIFE_TIME) },
+      ),
       expires_after: expiresAfter,
       refresh_before: refreshBefore,
     };
@@ -66,7 +68,7 @@ export default class AuthService {
     if (!user) return false;
     if (user.isActivated) return true;
 
-    if (await this.cryptService.getHash(activationCode) !== user.activationCodeHash) {
+    if (!(await this.cryptService.compare(activationCode, user.activationCodeHash))) {
       return false;
     }
 
@@ -77,7 +79,7 @@ export default class AuthService {
 
   private async createActivationCode(user: IUser): Promise<string> {
     if (user.isActivated) return null;
-    const activationCode = randomUUID();
+    const activationCode = uuid();
     const updated = await this.userService
       .update(user._id, { activationCode });
 
@@ -97,7 +99,7 @@ export default class AuthService {
     const newActivationCode = (activationCode) ?? await this.createActivationCode(user);
 
     // TODO sending of email with activation link
-    return `/activate/${user._id}/code/${newActivationCode}`;
+    return `/activation/by-user/${user._id}/code/${newActivationCode}`;
     // return true;
   }
 

@@ -5,6 +5,6 @@ import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options
 export default function getJwtConfig(configService: ConfigService): JwtModuleOptions {
   return {
     secret: configService.get(JWT_SECRET),
-    signOptions: { expiresIn: JWT_ACCESS_LIFE_TIME },
+    signOptions: { expiresIn: configService.get(JWT_ACCESS_LIFE_TIME) },
   };
 }

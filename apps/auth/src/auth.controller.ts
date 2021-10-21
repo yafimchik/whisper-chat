@@ -39,7 +39,6 @@ export default class AuthController {
     @Param('userId') userId: string,
     @Param('activationCode') activationCode: string,
   ): Promise<IActivationResult> {
-    // TODO redirect to activation page
     return {
       isActivated: await this.authService.activate(userId, activationCode),
     };
@@ -48,16 +47,15 @@ export default class AuthController {
   @UseGuards(LocalGuard)
   @Post('activation/send-email')
   async sendEmail(@AuthInfo() authInfo: IAuthInfo) {
-    if (authInfo.isActivated) return false; // TODO handling rejecting
-    return this.authService.sendActivationEmail(authInfo.email);
+    if (authInfo.isActivated) return null;
+    return {
+      link: await this.authService.sendActivationEmail(authInfo.email),
+    };
   }
 
   @UseGuards(LocalGuard)
   @Post('login')
-  async login(
-    @Body() userCredentials: RegisterUserDto,
-    @AuthInfo() authInfo: IAuthInfo,
-  ): Promise<IJwtAccess> {
+  async login(@AuthInfo() authInfo: IAuthInfo): Promise<IJwtAccess> {
     if (!authInfo.isActivated) {
       throw new ForbiddenException(USER_NOT_ACTIVATED_ERROR);
     }
