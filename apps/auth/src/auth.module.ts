@@ -12,6 +12,9 @@ import getJwtConfig from './configs/jwt.config';
 import { PassportModule } from '@nestjs/passport';
 import { UserService } from './user/user.service';
 import UserModel from './user/user.model';
+import LocalStrategy from './strategies/local-strategy.strategy';
+import JwtCommonStrategy from './strategies/jwt-common.strategy';
+import JwtRefreshStrategy from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import UserModel from './user/user.model';
   providers: [
     AuthService,
     UserService,
+    LocalStrategy,
+    JwtCommonStrategy,
+    JwtRefreshStrategy,
   ],
   exports: [AuthService],
 })

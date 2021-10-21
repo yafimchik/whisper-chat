@@ -6,9 +6,9 @@ import { IAuthInfo } from '../auth.interface';
 import { BAD_CREDENTIALS_ERROR } from '../auth.errors';
 
 @Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
+export default class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   constructor(private authService: AuthService) {
-    super();
+    super({ usernameField: 'email' });
   }
 
   async validate(email: string, password: string): Promise<IAuthInfo> {
