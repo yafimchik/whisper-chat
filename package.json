@@ -9,6 +9,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"{apps,libs}/**/*.ts\"",
+    "debug:auth": "nest start --debug --watch auth",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -21,9 +22,9 @@
     "test:e2e": "jest --config ./apps/core/test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^7.0.0",
+    "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.2",
-    "@nestjs/core": "^7.0.0",
+    "@nestjs/core": "^8.0.0",
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^9.0.0",
@@ -34,7 +35,7 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "date-fns": "^2.25.0",
-    "mongoose": "^5.13.11",
+    "mongoose": "^6.0.2",
     "nestjs-typegoose": "^7.1.38",
     "passport": "^0.5.0",
     "passport-jwt": "^4.0.0",
