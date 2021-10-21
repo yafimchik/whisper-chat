@@ -11,8 +11,8 @@ export default class UserEntity implements IUser {
   public constructor(user: IUser | DbDocumentUser) {
     this._id = (typeof user._id === 'string') ? user._id : user._id.toString();
     this.email = user.email;
-    this.passwordHash = user.email;
-    this.activationCodeHash = user.email;
+    this.passwordHash = user.passwordHash;
+    this.activationCodeHash = user.activationCodeHash;
     this.isActivated = user.isActivated;
   }
 

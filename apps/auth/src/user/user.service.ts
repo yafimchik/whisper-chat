@@ -15,7 +15,7 @@ export class UserService {
   ) {}
 
   async create({ email, password }: CreateUserDto): Promise<IUser> {
-    const passwordHash = this.cryptService.getHash(password);
+    const passwordHash = await this.cryptService.getHash(password);
     const newUser = new this.userModel({ email, passwordHash });
     const result = await newUser.save();
 
@@ -49,6 +49,7 @@ export class UserService {
     if (updateUserDto.password) {
       userDoc.passwordHash = await this.cryptService.getHash(updateUserDto.password);
     }
+    userDoc.isActivated = !!updateUserDto.isActivated;
 
     const dbUser = await this.userModel.findByIdAndUpdate(id, userDoc, { new: true }).exec();
     return dbUser ? new UserEntity(dbUser) : null;

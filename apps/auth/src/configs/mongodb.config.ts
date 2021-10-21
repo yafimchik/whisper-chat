@@ -11,9 +11,9 @@ import { TypegooseModuleOptions } from 'nestjs-typegoose';
 import { encodeUrl } from '../utils/utils';
 
 const authMongodbOptions = {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
+  // useNewUrlParser: true,
+  // useCreateIndex: true,
+  // useUnifiedTopology: true,
 };
 
 function getAuthMongodbConnectionString(configService: ConfigService): string {
