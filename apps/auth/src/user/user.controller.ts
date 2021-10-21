@@ -14,6 +14,7 @@ import CreateUserDto from './dto/create-user.dto';
 import { USER_NOT_FOUND_ERROR, USER_NOT_UNIQUE_ERROR } from './user.errors';
 import JwtCommonGuard from '../guards/jwt-common.guard';
 import { ISecuredUser } from './user.interface';
+import UpdateUserDto from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -62,7 +63,7 @@ export class UserController {
   @UsePipes(new ValidationPipe())
   @Patch(':id')
   async update(
-    @Param('id') id: string, @Body() updateUserDto: CreateUserDto,
+    @Param('id') id: string, @Body() updateUserDto: UpdateUserDto,
   ): Promise<ISecuredUser> {
     const updated = await this.userService.update(id, updateUserDto);
     if (!updated) {
