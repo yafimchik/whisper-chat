@@ -16,4 +16,6 @@ export interface ISecuredUser {
   email: string;
   _id: string;
   isActivated: boolean;
+  createdAt: Date,
+  updatedAt: Date,
 }

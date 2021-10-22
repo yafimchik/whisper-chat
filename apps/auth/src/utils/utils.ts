@@ -9,7 +9,9 @@ const SECS_IN_MINUTE = 60;
 const SECS_IN_HOUR = SECS_IN_MINUTE * 60;
 const SECS_IN_DAY = SECS_IN_HOUR * 24;
 
-export function getSecondsFromJwtLifeTimeString(lifeTimeString: string = ''): number {
+export const asyncPause = (ms) => new Promise(res => setTimeout(res, ms));
+
+export function getSecondsFromLifeTimeString(lifeTimeString: string = ''): number {
   if (!lifeTimeString.length) return 0;
   let seconds = 0;
   lifeTimeString

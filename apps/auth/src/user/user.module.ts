@@ -9,11 +9,11 @@ import UserModel from './user.model';
     TypegooseModule.forFeature([
       {
         typegooseClass: UserModel,
-        schemaOptions: { collection: 'User' },
+        schemaOptions: { collection: 'User', timestamps: true },
       },
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService]
+  providers: [UserService],
 })
 export class UserModule {}

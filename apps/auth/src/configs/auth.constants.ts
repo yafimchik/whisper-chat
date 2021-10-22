@@ -8,3 +8,7 @@ export const CRYPT_SALT_ROUNDS = 'CRYPT_SALT_ROUNDS';
 export const JWT_SECRET = 'JWT_SECRET';
 export const JWT_ACCESS_LIFE_TIME = 'JWT_ACCESS_LIFE_TIME';
 export const JWT_REFRESH_LIFE_TIME = 'JWT_REFRESH_LIFE_TIME';
+
+export const DEFAULT_ACCESS_LIFE_TIME = '60m';
+export const DEFAULT_REFRESH_LIFE_TIME = '7d';
+export const MILLIS_IN_SECOND = 1000;

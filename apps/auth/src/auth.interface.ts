@@ -6,6 +6,8 @@ export interface IAuthInfo {
 
 export interface IJwtPayload extends IAuthInfo {
   isRefreshToken?: boolean,
+  iat?: number,
+  exp?: number,
 }
 
 export interface IJwtAccess {

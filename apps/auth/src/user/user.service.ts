@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import CreateUserDto from './dto/create-user.dto';
 import UserModel, { DbModelUser } from './user.model';
 import UpdateUserDto from './dto/update-user.dto';
@@ -49,7 +49,9 @@ export class UserService {
     if (updateUserDto.password) {
       userDoc.passwordHash = await this.cryptService.getHash(updateUserDto.password);
     }
-    userDoc.isActivated = !!updateUserDto.isActivated;
+    if (updateUserDto.isActivated) {
+      userDoc.isActivated = !!updateUserDto.isActivated;
+    }
 
     const dbUser = await this.userModel.findByIdAndUpdate(id, userDoc, { new: true }).exec();
     return dbUser ? new UserEntity(dbUser) : null;

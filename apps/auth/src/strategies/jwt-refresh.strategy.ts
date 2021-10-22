@@ -1,15 +1,22 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { IAuthInfo, IJwtPayload } from '../auth.interface';
-import { JWT_SECRET } from '../configs/auth.constants';
-import { BAD_TOKEN_ERROR, USER_NOT_ACTIVATED_ERROR } from '../auth.errors';
+import { JWT_SECRET, MILLIS_IN_SECOND } from '../configs/auth.constants';
+import { BAD_TOKEN_ERROR, TOKEN_EXPIRED_ERROR, USER_NOT_ACTIVATED_ERROR } from '../auth.errors';
+import AuthService from '../auth.service';
+import { USER_NOT_FOUND_ERROR } from '../user/user.errors';
 
 @Injectable()
 export default class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -17,17 +24,31 @@ export default class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-
     });
   }
 
-  validate(payload: IJwtPayload): IAuthInfo {
+  async validate(payload: IJwtPayload): Promise<IAuthInfo> {
     if (!payload) {
-      throw new UnauthorizedException(BAD_TOKEN_ERROR);
+      throw new BadRequestException(BAD_TOKEN_ERROR);
     }
     if (!payload.isActivated) {
-      throw new UnauthorizedException(USER_NOT_ACTIVATED_ERROR);
+      throw new ForbiddenException(USER_NOT_ACTIVATED_ERROR);
     }
     if (!payload.isRefreshToken) {
-      throw new UnauthorizedException(BAD_TOKEN_ERROR);
+      throw new ForbiddenException(BAD_TOKEN_ERROR);
     }
-    delete payload.isRefreshToken;
-    return payload;
+
+    const userUpdatedAt = await this.authService.getLastUpdateDate(payload.userId);
+    if (!userUpdatedAt) {
+      throw new ForbiddenException(USER_NOT_FOUND_ERROR);
+    }
+
+    const createdAt = new Date(payload.iat * MILLIS_IN_SECOND);
+    if (userUpdatedAt > createdAt) {
+      throw new ForbiddenException(TOKEN_EXPIRED_ERROR);
+    }
+
+    return {
+      userId: payload.userId,
+      email: payload.email,
+      isActivated: payload.isActivated,
+    };
   }
 }

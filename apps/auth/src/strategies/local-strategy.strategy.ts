@@ -20,7 +20,7 @@ export default class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     return {
       email,
       isActivated: user.isActivated,
-      userId: user._id.toString(),
+      userId: user._id,
     };
   }
 }

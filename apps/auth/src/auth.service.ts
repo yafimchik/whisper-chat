@@ -6,10 +6,15 @@ import { JwtService } from '@nestjs/jwt';
 import { IAuthInfo, IJwtAccess, IJwtPayload } from './auth.interface';
 import { add as addToDate } from 'date-fns';
 import { ConfigService } from '@nestjs/config';
-import { JWT_ACCESS_LIFE_TIME, JWT_REFRESH_LIFE_TIME } from './configs/auth.constants';
-import { getSecondsFromJwtLifeTimeString } from './utils/utils';
+import {
+  DEFAULT_ACCESS_LIFE_TIME,
+  DEFAULT_REFRESH_LIFE_TIME,
+  JWT_ACCESS_LIFE_TIME,
+  JWT_REFRESH_LIFE_TIME,
+} from './configs/auth.constants';
 import { IUser } from './user/user.interface';
 import { v4 as uuid } from 'uuid';
+import { getSecondsFromLifeTimeString } from './utils/utils';
 
 
 @Injectable()
@@ -27,6 +32,11 @@ export default class AuthService {
     return (await this.cryptService.compare(password, user.passwordHash)) ? user : null;
   }
 
+  async getLastUpdateDate(id: string): Promise<Date> {
+    const user = await this.userService.findOne(id);
+    return user ? user.updatedAt : null;
+  }
+
   async register(createUserDto: RegisterUserDto): Promise<IUser> {
     const existedUser = await this.userService.findByEmail(createUserDto.email);
     if (existedUser) return null;
@@ -40,24 +50,20 @@ export default class AuthService {
     return newUser;
   }
 
-  async generateTokens(payload: IAuthInfo): Promise<IJwtAccess> {
+  async generateTokens(authInfo: IAuthInfo): Promise<IJwtAccess> {
     const currentDate = new Date();
 
-    const refreshBefore = this
-      .getTokenExpireDate(currentDate, this.configService.get(JWT_REFRESH_LIFE_TIME))
-      .toJSON();
-    const expiresAfter = this
-      .getTokenExpireDate(currentDate, this.configService.get(JWT_ACCESS_LIFE_TIME))
-      .toJSON();
+    const accessLifeTime = this.configService.get(JWT_ACCESS_LIFE_TIME) ?? DEFAULT_ACCESS_LIFE_TIME;
+    const refreshLifeTime = this.configService.get(JWT_REFRESH_LIFE_TIME) ?? DEFAULT_REFRESH_LIFE_TIME;
 
-    const refreshPayload: IJwtPayload = { ...payload, isRefreshToken: true };
+    const refreshBefore = this.getTokenExpireDate(currentDate, accessLifeTime).toJSON();
+    const expiresAfter = this.getTokenExpireDate(currentDate, refreshLifeTime).toJSON();
+
+    const refreshPayload: IJwtPayload = { ...authInfo, isRefreshToken: true };
 
     return {
-      access_token: await this.jwtService.signAsync(payload),
-      refresh_token: await this.jwtService.signAsync(
-        refreshPayload,
-        { expiresIn: this.configService.get(JWT_REFRESH_LIFE_TIME) },
-      ),
+      access_token: await this.jwtService.signAsync(authInfo),
+      refresh_token: await this.jwtService.signAsync(refreshPayload, { expiresIn: refreshLifeTime }),
       expires_after: expiresAfter,
       refresh_before: refreshBefore,
     };
@@ -104,7 +110,7 @@ export default class AuthService {
   }
 
   private getTokenExpireDate(creationDate: Date = new Date(), lifeTimeString: string): Date {
-    const seconds = getSecondsFromJwtLifeTimeString(lifeTimeString);
+    const seconds = getSecondsFromLifeTimeString(lifeTimeString);
     return addToDate(creationDate, { seconds });
   }
 }

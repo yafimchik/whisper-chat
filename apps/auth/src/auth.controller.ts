@@ -15,7 +15,7 @@ import { USER_NOT_UNIQUE_ERROR } from './user/user.errors';
 import JwtRefreshGuard from './guards/jwt-refresh.guard';
 import LocalGuard from './guards/local.guard';
 import { USER_NOT_ACTIVATED_ERROR } from './auth.errors';
-import { AuthInfo } from '../decorators/auth-info.decorator';
+import { AuthInfo } from './decorators/auth-info.decorator';
 import { ISecuredUser } from './user/user.interface';
 
 @Controller()
