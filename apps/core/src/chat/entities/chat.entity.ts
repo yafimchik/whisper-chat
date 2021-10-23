@@ -1,1 +1,1 @@
-export class Chat {}
+export default class Chat {}

@@ -1,1 +1,1 @@
-export class PrivateChat {}
+export default class PrivateChat {}

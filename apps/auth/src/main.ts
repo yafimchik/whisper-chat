@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import AuthModule from './auth.module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AuthModule);
   await app.listen(3000);
 }

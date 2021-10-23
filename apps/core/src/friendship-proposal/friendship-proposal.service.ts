@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFriendshipProposalDto } from './dto/create-friendship-proposal.dto';
-import { UpdateFriendshipProposalDto } from './dto/update-friendship-proposal.dto';
+import CreateFriendshipProposalDto from './dto/create-friendship-proposal.dto';
+import UpdateFriendshipProposalDto from './dto/update-friendship-proposal.dto';
 
 @Injectable()
-export class FriendshipProposalService {
+export default class FriendshipProposalService {
   create(createFriendshipProposalDto: CreateFriendshipProposalDto) {
     return 'This action adds a new friendshipProposal';
   }

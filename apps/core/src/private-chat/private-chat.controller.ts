@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PrivateChatService } from './private-chat.service';
-import { CreatePrivateChatDto } from './dto/create-private-chat.dto';
-import { UpdatePrivateChatDto } from './dto/update-private-chat.dto';
+import PrivateChatService from './private-chat.service';
+import CreatePrivateChatDto from './dto/create-private-chat.dto';
+import UpdatePrivateChatDto from './dto/update-private-chat.dto';
 
 @Controller('private-chat')
-export class PrivateChatController {
+export default class PrivateChatController {
   constructor(private readonly privateChatService: PrivateChatService) {}
 
   @Post()

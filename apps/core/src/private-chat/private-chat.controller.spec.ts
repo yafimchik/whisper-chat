@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrivateChatController } from './private-chat.controller';
-import { PrivateChatService } from './private-chat.service';
+import PrivateChatController from './private-chat.controller';
+import PrivateChatService from './private-chat.service';
 
 describe('PrivateChatController', () => {
   let controller: PrivateChatController;

@@ -4,7 +4,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 
 @Controller('chat')
-export class ChatController {
+export default class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post()

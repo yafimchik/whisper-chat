@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserInfoDto } from './dto/create-user-info.dto';
-import { UpdateUserInfoDto } from './dto/update-user-info.dto';
+import CreateUserInfoDto from './dto/create-user-info.dto';
+import UpdateUserInfoDto from './dto/update-user-info.dto';
 
 @Injectable()
-export class UserInfoService {
+export default class UserInfoService {
   create(createUserInfoDto: CreateUserInfoDto) {
     return 'This action adds a new userInfo';
   }

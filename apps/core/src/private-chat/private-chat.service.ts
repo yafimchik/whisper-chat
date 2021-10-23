@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePrivateChatDto } from './dto/create-private-chat.dto';
-import { UpdatePrivateChatDto } from './dto/update-private-chat.dto';
+import CreatePrivateChatDto from './dto/create-private-chat.dto';
+import UpdatePrivateChatDto from './dto/update-private-chat.dto';
 
 @Injectable()
-export class PrivateChatService {
+export default class PrivateChatService {
   create(createPrivateChatDto: CreatePrivateChatDto) {
     return 'This action adds a new privateChat';
   }

@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { FriendListService } from './friend-list.service';
-import { CreateFriendListDto } from './dto/create-friend-list.dto';
-import { UpdateFriendListDto } from './dto/update-friend-list.dto';
+import FriendListService from './friend-list.service';
+import CreateFriendListDto from './dto/create-friend-list.dto';
+import UpdateFriendListDto from './dto/update-friend-list.dto';
 
 @Controller('friend-list')
-export class FriendListController {
+export default class FriendListController {
   constructor(private readonly friendListService: FriendListService) {}
 
   @Post()

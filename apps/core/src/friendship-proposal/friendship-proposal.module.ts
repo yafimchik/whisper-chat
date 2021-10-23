@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { FriendshipProposalService } from './friendship-proposal.service';
-import { FriendshipProposalController } from './friendship-proposal.controller';
+import FriendshipProposalService from './friendship-proposal.service';
+import FriendshipProposalController from './friendship-proposal.controller';
 
 @Module({
   controllers: [FriendshipProposalController],
-  providers: [FriendshipProposalService]
+  providers: [FriendshipProposalService],
 })
-export class FriendshipProposalModule {}
+export default class FriendshipProposalModule {}

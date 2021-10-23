@@ -1,16 +1,10 @@
-import {
-  IsMobilePhone,
-  IsString,
-  Length,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export default class CreateUserDto {
-  @IsMobilePhone()
-  phoneNumber: string;
+  @IsEmail()
+  email: string;
 
   @IsString()
-  @MinLength(8)
-  @Length(10, 20)
+  @MinLength(8, { message: 'Password length must be greater or equal 8' })
   password: string;
 }
