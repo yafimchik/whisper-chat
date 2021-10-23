@@ -1,12 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import AuthModule from '../src/Auth.module';
-import RegisterUserDto from '../src/dto/user-register.dto';
 import { Response } from 'supertest';
 import { disconnect } from 'mongoose';
+import RegisterUserDto from '../src/dto/user-register.dto';
 import { TOKEN_EXPIRED_ERROR, USER_NOT_ACTIVATED_ERROR } from '../src/auth.errors';
 import { asyncPause } from '../src/utils/utils';
+import startApp from './auth.utils';
 
 const userDto: RegisterUserDto = {
   email: 'user-guard@test.ru',
@@ -23,16 +22,9 @@ describe('Auth. Test Guards (e2e)', () => {
   let refresh: string;
   let activationLink: string;
 
-  async function startApp() {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  }
-
-  beforeEach(startApp);
+  beforeEach(async () => {
+    app = await startApp();
+  });
 
   afterAll(async () => {
     await request(app.getHttpServer())
@@ -43,7 +35,7 @@ describe('Auth. Test Guards (e2e)', () => {
   });
 
   beforeAll(async () => {
-    await startApp();
+    app = await startApp();
 
     await request(app.getHttpServer())
       .post('/register')
@@ -71,10 +63,7 @@ describe('Auth. Test Guards (e2e)', () => {
     });
 
     it('2: /activation (GET) - SUCCESS', async () => {
-      await request(app.getHttpServer())
-        .get(activationLink)
-        .expect(200)
-        .then();
+      await request(app.getHttpServer()).get(activationLink).expect(200).then();
       return asyncPause(1000);
     });
   });
@@ -132,11 +121,7 @@ describe('Auth. Test Guards (e2e)', () => {
     });
 
     it('8: /login (POST) : after user update with old password - FAIL', () => {
-      return request(app.getHttpServer())
-        .post('/login')
-        .send(userDto)
-        .expect(401)
-        .then();
+      return request(app.getHttpServer()).post('/login').send(userDto).expect(401).then();
     });
 
     it('9: /login (POST) : after user update - SUCCESS', async () => {

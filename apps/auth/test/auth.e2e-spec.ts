@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import AuthModule from '../src/Auth.module';
-import RegisterUserDto from '../src/dto/user-register.dto';
 import { Response } from 'supertest';
-import { USER_NOT_UNIQUE_ERROR } from '../src/user/user.errors';
 import { disconnect } from 'mongoose';
+import RegisterUserDto from '../src/dto/user-register.dto';
+import { USER_NOT_UNIQUE_ERROR } from '../src/user/user.errors';
 import { BAD_CREDENTIALS_ERROR, USER_NOT_ACTIVATED_ERROR } from '../src/auth.errors';
+import startApp from './auth.utils';
 
 const userDto: RegisterUserDto = {
   email: 'auth@test.ru',
@@ -16,8 +16,6 @@ const userDto: RegisterUserDto = {
 const wrongUserDto: RegisterUserDto = { ...userDto };
 wrongUserDto.password += 'asd';
 
-
-
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let userId: string;
@@ -25,7 +23,7 @@ describe('AuthController (e2e)', () => {
   let jwt: string;
   let jwtRefresh: string;
 
-  function checkAccessResponse({ body }: Response) {
+  function checkAccessResponse({ body }: Response): void {
     expect(body.access_token).toBeDefined();
     expect(body.refresh_token).toBeDefined();
     expect(body.expires_after).toBeDefined();
@@ -35,12 +33,7 @@ describe('AuthController (e2e)', () => {
   }
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    app = await startApp();
   });
 
   afterAll(disconnect);
@@ -68,10 +61,7 @@ describe('AuthController (e2e)', () => {
     });
 
     it('/login (POST) : without credentials - FAIL', () => {
-      return request(app.getHttpServer())
-        .post('/login')
-        .expect(401)
-        .then();
+      return request(app.getHttpServer()).post('/login').expect(401).then();
     });
 
     it('/login (POST) : not activated user - FAIL', () => {
@@ -85,17 +75,11 @@ describe('AuthController (e2e)', () => {
     });
 
     it('/activation/send-email (POST) - FAIL', () => {
-      return request(app.getHttpServer())
-        .post('/activation/send-email')
-        .expect(401)
-        .then();
+      return request(app.getHttpServer()).post('/activation/send-email').expect(401).then();
     });
 
     it('/activation/send-email (POST) - FAIL', () => {
-      return request(app.getHttpServer())
-        .post('/activation/send-email')
-        .expect(401)
-        .then();
+      return request(app.getHttpServer()).post('/activation/send-email').expect(401).then();
     });
   });
 
@@ -138,7 +122,7 @@ describe('AuthController (e2e)', () => {
 
     it('/activation/by-user/:userId/code/:activationCode (POST) : with wrong activation code - FAIL', () => {
       return request(app.getHttpServer())
-        .get(activationLink + 'jhks')
+        .get(`${activationLink}jhks`)
         .expect(200)
         .then(({ body }: Response) => {
           expect(body.isActivated).toBeFalsy();
@@ -198,8 +182,8 @@ describe('AuthController (e2e)', () => {
     it('/refresh-tokens (GET) - SUCCESS', () => {
       return request(app.getHttpServer())
         .get('/refresh-tokens')
-        .set('Authorization', `Bearer ${jwtRefresh}`)
         .expect(200)
+        .set('Authorization', `Bearer ${jwtRefresh}`)
         .then(checkAccessResponse);
     });
 

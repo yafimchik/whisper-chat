@@ -1,23 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import AuthModule from '../src/Auth.module';
-import RegisterUserDto from '../src/dto/user-register.dto';
 import { Response } from 'supertest';
 import { disconnect } from 'mongoose';
+import AuthModule from '../src/Auth.module';
+import RegisterUserDto from '../src/dto/user-register.dto';
 import { ISecuredUser } from '../src/user/user.interface';
 import UpdateUserDto from '../src/user/dto/update-user.dto';
 import { USER_NOT_FOUND_ERROR, USER_NOT_UNIQUE_ERROR } from '../src/user/user.errors';
 import { asyncPause } from '../src/utils/utils';
+import startApp from './auth.utils';
 
 const userDto: RegisterUserDto = {
   email: 'user@test.ru',
   password: 'asdjklxcjklasd;lsads',
 };
 
-function getNewUserDto(number: number = 0) {
+function getNewUserDto(number = 0): RegisterUserDto {
   const newUser = { ...userDto };
-  newUser.email = number.toString() + '_' + newUser.email;
+  newUser.email = `${number.toString()}_${newUser.email}`;
   newUser.password = number.toString() + newUser.password;
   return newUser;
 }
@@ -32,18 +33,11 @@ describe('UserController (e2e)', () => {
   let userId: string;
   let jwt: string;
 
-  let newUsers: ISecuredUser[] = [];
+  const newUsers: ISecuredUser[] = [];
 
-  async function startApp() {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  }
-
-  beforeEach(startApp);
+  beforeEach(async () => {
+    app = await startApp();
+  });
 
   afterAll(async () => {
     await request(app.getHttpServer())
@@ -56,7 +50,7 @@ describe('UserController (e2e)', () => {
 
   beforeAll(async () => {
     let activationLink: string;
-    await startApp();
+    app = await startApp();
 
     await request(app.getHttpServer())
       .post('/register')
@@ -70,8 +64,7 @@ describe('UserController (e2e)', () => {
       .then(({ body }: Response) => {
         activationLink = body.link;
       });
-    await request(app.getHttpServer())
-      .get(activationLink);
+    await request(app.getHttpServer()).get(activationLink);
     await asyncPause(1000);
     return request(app.getHttpServer())
       .post('/login')
@@ -86,16 +79,18 @@ describe('UserController (e2e)', () => {
       const tasks: Promise<void>[] = [];
       for (let i = 0; i < newUsersCount; i += 1) {
         const newUser = getNewUserDto(i);
-        tasks.push(request(app.getHttpServer())
-          .post('/user')
-          .set('Authorization', `Bearer ${jwt}`)
-          .send(getNewUserDto(i))
-          .expect(201)
-          .then(({ body }: Response) => {
-            expect(body._id).toBeDefined();
-            expect(body.email).toBe(newUser.email);
-            newUsers.push(body);
-          }));
+        tasks.push(
+          request(app.getHttpServer())
+            .post('/user')
+            .set('Authorization', `Bearer ${jwt}`)
+            .send(getNewUserDto(i))
+            .expect(201)
+            .then(({ body }: Response) => {
+              expect(body._id).toBeDefined();
+              expect(body.email).toBe(newUser.email);
+              newUsers.push(body);
+            }),
+        );
       }
       return Promise.all(tasks);
     });
@@ -117,7 +112,7 @@ describe('UserController (e2e)', () => {
       const user = newUsers[0];
       const update: UpdateUserDto = {
         isActivated: true,
-        email: 'updated_' + user.email,
+        email: `updated_${user.email}`,
       };
       return request(app.getHttpServer())
         .patch(`/user/${user._id}`)
@@ -172,14 +167,18 @@ describe('UserController (e2e)', () => {
     });
 
     it('/user/:id (DELETE with JWT) - SUCCESS', async () => {
+      const deleteTasks: Promise<void>[] = [];
       for (let i = 0; i < newUsers.length; i += 1) {
         const id = newUsers[i]._id;
-        await request(app.getHttpServer())
-          .delete(`/user/${id}`)
-          .set('Authorization', `Bearer ${jwt}`)
-          .expect(200)
-          .then();
+        deleteTasks.push(
+          request(app.getHttpServer())
+            .delete(`/user/${id}`)
+            .set('Authorization', `Bearer ${jwt}`)
+            .expect(200)
+            .then(),
+        );
       }
+      return deleteTasks;
     });
   });
 
