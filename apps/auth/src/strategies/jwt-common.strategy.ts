@@ -1,19 +1,17 @@
 import { PassportStrategy } from '@nestjs/passport';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { IAuthInfo, IJwtPayload } from '../auth.interface';
-import { JWT_SECRET, MILLIS_IN_SECOND } from '../configs/auth.constants';
-import { BAD_TOKEN_ERROR, TOKEN_EXPIRED_ERROR, USER_NOT_ACTIVATED_ERROR } from '../auth.errors';
+import { JWT_SECRET } from '../configs/auth.constants';
+import { BAD_TOKEN_ERROR, USER_NOT_ACTIVATED_ERROR } from '../auth.errors';
 import AuthService from '../auth.service';
-import { USER_NOT_FOUND_ERROR } from '../user/user.errors';
+import checkUserChanges from './jwt.strategy.utils';
 
 @Injectable()
 export default class JwtCommonStrategy extends PassportStrategy(Strategy, 'jwt-common') {
+  private readonly checkUserChanges: (payload: IJwtPayload) => Promise<void>;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
@@ -22,26 +20,17 @@ export default class JwtCommonStrategy extends PassportStrategy(Strategy, 'jwt-c
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.get(JWT_SECRET),
     });
+    this.checkUserChanges = checkUserChanges.bind(this);
   }
 
   async validate(payload: IJwtPayload): Promise<IAuthInfo> {
-    if (!payload) {
-      throw new BadRequestException(BAD_TOKEN_ERROR);
-    }
     if (!payload.isActivated) {
       throw new ForbiddenException(USER_NOT_ACTIVATED_ERROR);
     }
     if (payload.isRefreshToken) {
       throw new ForbiddenException(BAD_TOKEN_ERROR);
     }
-    const userUpdatedAt = await this.authService.getLastUpdateDate(payload.userId);
-    if (!userUpdatedAt) {
-      throw new ForbiddenException(USER_NOT_FOUND_ERROR);
-    }
-    const createdAt = new Date(payload.iat * MILLIS_IN_SECOND);
-    if (userUpdatedAt > createdAt) {
-      throw new ForbiddenException(TOKEN_EXPIRED_ERROR);
-    }
+    await this.checkUserChanges(payload);
 
     return {
       userId: payload.userId,
