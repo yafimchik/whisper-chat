@@ -10,12 +10,12 @@ import {
 } from '@nestjs/common';
 import AuthService from './auth.service';
 import RegisterUserDto from './dto/user-register.dto';
-import { IActivationResult, IAuthInfo, IJwtAccess } from './auth.interface';
+import { IActivationLink, IActivationResult, IAuthInfo, IJwtAccess } from './auth.interface';
 import { USER_NOT_UNIQUE_ERROR } from './user/user.errors';
 import JwtRefreshGuard from './guards/jwt-refresh.guard';
 import LocalGuard from './guards/local.guard';
 import { USER_NOT_ACTIVATED_ERROR } from './auth.errors';
-import { AuthInfo } from './decorators/auth-info.decorator';
+import AuthInfo from './decorators/auth-info.decorator';
 import { ISecuredUser } from './user/user.interface';
 
 @Controller()
@@ -23,9 +23,7 @@ export default class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(
-    @Body() userCredentials: RegisterUserDto,
-  ): Promise<ISecuredUser> {
+  async register(@Body() userCredentials: RegisterUserDto): Promise<ISecuredUser> {
     const user = await this.authService.register(userCredentials);
     if (!user) {
       throw new BadRequestException(USER_NOT_UNIQUE_ERROR);
@@ -46,7 +44,7 @@ export default class AuthController {
 
   @UseGuards(LocalGuard)
   @Post('activation/send-email')
-  async sendEmail(@AuthInfo() authInfo: IAuthInfo) {
+  async sendEmail(@AuthInfo() authInfo: IAuthInfo): Promise<IActivationLink> {
     if (authInfo.isActivated) return null;
     return {
       link: await this.authService.sendActivationEmail(authInfo.email),

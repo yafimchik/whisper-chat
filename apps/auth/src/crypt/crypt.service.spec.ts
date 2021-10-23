@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import CryptService from './crypt.service';
-import { CRYPT_MODULE_OPTIONS } from './crypt.constants';
 import { Provider } from '@nestjs/common';
+import CryptService from './crypt.service';
+import CRYPT_MODULE_OPTIONS from './crypt.constants';
 
 describe('CryptService', () => {
   let service: CryptService;
@@ -36,7 +36,7 @@ describe('CryptService', () => {
 
   it('create hash and compare with wrong password - fail', async () => {
     const password = 'asdglasdv;lkjwe2134t';
-    const password2 = 'jhklasfdghjklafddfgg4';
+    const password2 = `${password}.`;
 
     const hash = await service.getHash(password);
     const compareResult = await service.compare(password2, hash);

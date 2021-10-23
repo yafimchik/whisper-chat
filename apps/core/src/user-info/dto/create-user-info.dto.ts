@@ -1,1 +1,1 @@
-export class CreateUserInfoDto {}
+export default class CreateUserInfoDto {}

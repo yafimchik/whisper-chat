@@ -1,8 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { IAuthInfo } from '../auth.interface';
 
-const AuthInfoFactory = (data: unknown, ctx: ExecutionContext) => {
+const AuthInfo = createParamDecorator((data: unknown, ctx: ExecutionContext): IAuthInfo => {
   const request = ctx.switchToHttp().getRequest();
   return request.user;
-};
+});
 
-export const AuthInfo = createParamDecorator(AuthInfoFactory);
+export default AuthInfo;

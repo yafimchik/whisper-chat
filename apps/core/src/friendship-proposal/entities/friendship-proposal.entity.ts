@@ -1,1 +1,1 @@
-export class FriendshipProposal {}
+export default class FriendshipProposal {}

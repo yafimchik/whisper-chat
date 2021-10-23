@@ -1,7 +1,7 @@
 import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import CryptService from './crypt.service';
 import { ICryptModuleOptions, ICryptOptions } from './crypt.interface';
-import { CRYPT_MODULE_OPTIONS } from './crypt.constants';
+import CRYPT_MODULE_OPTIONS from './crypt.constants';
 
 @Global()
 @Module({})
@@ -35,10 +35,10 @@ export default class CryptModule {
   private static createAsyncOptionsProvider(options: ICryptModuleOptions): Provider {
     return {
       provide: CRYPT_MODULE_OPTIONS,
-      async useFactory(...args: any[]) {
+      async useFactory(...args: any[]): Promise<ICryptOptions> {
         return options.useFactory(...args);
       },
-      inject: options.inject || []
+      inject: options.inject || [],
     };
   }
 }

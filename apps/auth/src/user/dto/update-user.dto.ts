@@ -1,5 +1,4 @@
 import { IsBoolean, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
-import { prop } from '@typegoose/typegoose';
 
 export default class UpdateUserDto {
   @IsOptional()

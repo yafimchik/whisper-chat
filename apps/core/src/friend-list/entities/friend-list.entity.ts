@@ -1,1 +1,1 @@
-export class FriendList {}
+export default class FriendList {}

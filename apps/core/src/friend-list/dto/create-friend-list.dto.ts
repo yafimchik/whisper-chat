@@ -1,1 +1,1 @@
-export class CreateFriendListDto {}
+export default class CreateFriendListDto {}

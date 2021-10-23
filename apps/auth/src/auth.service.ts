@@ -1,21 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UserService } from './user/user.service';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { add as addToDate } from 'date-fns';
+import { v4 as uuid } from 'uuid';
+import UserService from './user/user.service';
 import RegisterUserDto from './dto/user-register.dto';
 import CryptService from './crypt/crypt.service';
-import { JwtService } from '@nestjs/jwt';
 import { IAuthInfo, IJwtAccess, IJwtPayload } from './auth.interface';
-import { add as addToDate } from 'date-fns';
-import { ConfigService } from '@nestjs/config';
+import { IUser } from './user/user.interface';
+import { getSecondsFromLifeTimeString } from './utils/utils';
 import {
   DEFAULT_ACCESS_LIFE_TIME,
   DEFAULT_REFRESH_LIFE_TIME,
   JWT_ACCESS_LIFE_TIME,
   JWT_REFRESH_LIFE_TIME,
 } from './configs/auth.constants';
-import { IUser } from './user/user.interface';
-import { v4 as uuid } from 'uuid';
-import { getSecondsFromLifeTimeString } from './utils/utils';
-
 
 @Injectable()
 export default class AuthService {
@@ -54,22 +53,25 @@ export default class AuthService {
     const currentDate = new Date();
 
     const accessLifeTime = this.configService.get(JWT_ACCESS_LIFE_TIME) ?? DEFAULT_ACCESS_LIFE_TIME;
-    const refreshLifeTime = this.configService.get(JWT_REFRESH_LIFE_TIME) ?? DEFAULT_REFRESH_LIFE_TIME;
+    const refreshLifeTime =
+      this.configService.get(JWT_REFRESH_LIFE_TIME) ?? DEFAULT_REFRESH_LIFE_TIME;
 
-    const refreshBefore = this.getTokenExpireDate(currentDate, accessLifeTime).toJSON();
-    const expiresAfter = this.getTokenExpireDate(currentDate, refreshLifeTime).toJSON();
+    const refreshBefore = AuthService.getTokenExpireDate(currentDate, accessLifeTime).toJSON();
+    const expiresAfter = AuthService.getTokenExpireDate(currentDate, refreshLifeTime).toJSON();
 
     const refreshPayload: IJwtPayload = { ...authInfo, isRefreshToken: true };
 
     return {
       access_token: await this.jwtService.signAsync(authInfo),
-      refresh_token: await this.jwtService.signAsync(refreshPayload, { expiresIn: refreshLifeTime }),
+      refresh_token: await this.jwtService.signAsync(refreshPayload, {
+        expiresIn: refreshLifeTime,
+      }),
       expires_after: expiresAfter,
       refresh_before: refreshBefore,
     };
   }
 
-  async activate(userId, activationCode): Promise<boolean> {
+  async activate(userId: string, activationCode: string): Promise<boolean> {
     const user = await this.userService.findOne(userId);
     if (!user) return false;
     if (user.isActivated) return true;
@@ -78,21 +80,22 @@ export default class AuthService {
       return false;
     }
 
-    const result = await this.userService
-      .update(user._id, { isActivated: true });
+    const result = await this.userService.update(user._id, { isActivated: true });
     return !!result;
   }
 
   private async createActivationCode(user: IUser): Promise<string> {
     if (user.isActivated) return null;
     const activationCode = uuid();
-    const updated = await this.userService
-      .update(user._id, { activationCode });
+    const updated = await this.userService.update(user._id, { activationCode });
 
     return updated ? activationCode : null;
   }
 
-  async sendActivationEmail(userOrEmail: IUser | string, activationCode?: string): Promise<boolean | string> {
+  async sendActivationEmail(
+    userOrEmail: IUser | string,
+    activationCode?: string,
+  ): Promise<boolean | string> {
     let user: IUser;
     if (typeof userOrEmail === 'string') {
       user = await this.userService.findByEmail(userOrEmail);
@@ -102,14 +105,14 @@ export default class AuthService {
 
     if (user.isActivated) return false;
 
-    const newActivationCode = (activationCode) ?? await this.createActivationCode(user);
+    const newActivationCode = activationCode ?? (await this.createActivationCode(user));
 
     // TODO sending of email with activation link
     return `/activation/by-user/${user._id}/code/${newActivationCode}`;
     // return true;
   }
 
-  private getTokenExpireDate(creationDate: Date = new Date(), lifeTimeString: string): Date {
+  private static getTokenExpireDate(creationDate: Date = new Date(), lifeTimeString: string): Date {
     const seconds = getSecondsFromLifeTimeString(lifeTimeString);
     return addToDate(creationDate, { seconds });
   }

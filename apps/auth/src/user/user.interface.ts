@@ -9,13 +9,13 @@ export interface IUser extends ISecuredUser {
   passwordHash: string;
   activationCodeHash: string;
 
-  getSecuredUser: () => ISecuredUser,
+  getSecuredUser: () => ISecuredUser;
 }
 
 export interface ISecuredUser {
   email: string;
   _id: string;
   isActivated: boolean;
-  createdAt: Date,
-  updatedAt: Date,
+  createdAt: Date;
+  updatedAt: Date;
 }

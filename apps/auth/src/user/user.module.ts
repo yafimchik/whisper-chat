@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
 import { TypegooseModule } from 'nestjs-typegoose';
-import UserModel from './user.model';
+import UserService from './user.service';
+import UserController from './user.controller';
+import { UserModel } from './user.model';
 
 @Module({
   imports: [
@@ -16,4 +16,4 @@ import UserModel from './user.model';
   controllers: [UserController],
   providers: [UserService],
 })
-export class UserModule {}
+export default class UserModule {}

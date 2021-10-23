@@ -1,13 +1,13 @@
 export interface IAuthInfo {
-  userId: string,
-  email: string,
-  isActivated: boolean,
+  userId: string;
+  email: string;
+  isActivated: boolean;
 }
 
 export interface IJwtPayload extends IAuthInfo {
-  isRefreshToken?: boolean,
-  iat?: number,
-  exp?: number,
+  isRefreshToken?: boolean;
+  iat?: number;
+  exp?: number;
 }
 
 export interface IJwtAccess {
@@ -19,4 +19,8 @@ export interface IJwtAccess {
 
 export interface IActivationResult {
   isActivated: boolean;
+}
+
+export interface IActivationLink {
+  link: string | boolean;
 }

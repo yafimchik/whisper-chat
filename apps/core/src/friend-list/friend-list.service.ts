@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFriendListDto } from './dto/create-friend-list.dto';
-import { UpdateFriendListDto } from './dto/update-friend-list.dto';
+import CreateFriendListDto from './dto/create-friend-list.dto';
+import UpdateFriendListDto from './dto/update-friend-list.dto';
 
 @Injectable()
-export class FriendListService {
+export default class FriendListService {
   create(createFriendListDto: CreateFriendListDto) {
     return 'This action adds a new friendList';
   }

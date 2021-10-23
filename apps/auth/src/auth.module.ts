@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
-import AuthController from './auth.controller';
-import AuthService from './auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypegooseModule } from 'nestjs-typegoose';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import UserModule from './user/user.module';
+import AuthController from './auth.controller';
+import AuthService from './auth.service';
 import CryptModule from './crypt/crypt.module';
 import getAuthMongodbConfig from './configs/mongodb.config';
 import getAuthCryptConfig from './configs/crypt.config';
-import { JwtModule } from '@nestjs/jwt';
 import getJwtConfig from './configs/jwt.config';
-import { PassportModule } from '@nestjs/passport';
-import { UserService } from './user/user.service';
-import UserModel from './user/user.model';
+import UserService from './user/user.service';
+import { UserModel } from './user/user.model';
 import LocalStrategy from './strategies/local-strategy.strategy';
 import JwtCommonStrategy from './strategies/jwt-common.strategy';
 import JwtRefreshStrategy from './strategies/jwt-refresh.strategy';
@@ -44,13 +44,7 @@ import JwtRefreshStrategy from './strategies/jwt-refresh.strategy';
     PassportModule,
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    UserService,
-    LocalStrategy,
-    JwtCommonStrategy,
-    JwtRefreshStrategy,
-  ],
+  providers: [AuthService, UserService, LocalStrategy, JwtCommonStrategy, JwtRefreshStrategy],
   exports: [AuthService],
 })
 export default class AuthModule {}

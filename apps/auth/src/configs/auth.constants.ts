@@ -12,3 +12,4 @@ export const JWT_REFRESH_LIFE_TIME = 'JWT_REFRESH_LIFE_TIME';
 export const DEFAULT_ACCESS_LIFE_TIME = '60m';
 export const DEFAULT_REFRESH_LIFE_TIME = '7d';
 export const MILLIS_IN_SECOND = 1000;
+export const RADIX = 10;
