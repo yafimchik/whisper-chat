@@ -1,9 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { Response } from 'supertest';
 import { disconnect } from 'mongoose';
-import AuthModule from '../src/Auth.module';
 import RegisterUserDto from '../src/dto/user-register.dto';
 import { ISecuredUser } from '../src/user/user.interface';
 import UpdateUserDto from '../src/user/dto/update-user.dto';
